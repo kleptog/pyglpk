@@ -587,6 +587,7 @@ static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
 #endif // GLPK_VERSION(4, 24)
 #if GLPK_VERSION(4, 23)
      "mir_cuts",
+     "mip_gap",
 #endif // GLPK_VERSION(4, 23)
      "tol_int", "tol_obj", "tm_lim", "out_frq", "out_dly", 
      "callback", //"cb_info", "cb_size",
@@ -600,7 +601,7 @@ static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
        "i"
 #endif // GLPK_VERSION(4, 24)
 #if GLPK_VERSION(4, 23)
-       "i"
+       "ii"
 #endif // GLPK_VERSION(4, 23)
        "ddiiiO", kwlist, &cp.msg_lev, &cp.br_tech, &cp.bt_tech,
 #if GLPK_VERSION(4, 21)
@@ -611,6 +612,7 @@ static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
 #endif // GLPK_VERSION(4, 24)
 #if GLPK_VERSION(4, 23)
        &cp.mir_cuts,
+       &cp.mip_gap,
 #endif // GLPK_VERSION(4, 23)
        &cp.tol_int, &cp.tol_obj, &cp.tm_lim, &cp.out_frq, &cp.out_dly,
        &callback)) {
@@ -677,6 +679,12 @@ static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
     PyErr_SetString(PyExc_ValueError, "out_dly must be non-negative");
     return NULL;
   }
+#if GLPK_VERSION(4, 23)
+  if (cp.mip_gap<0) {
+    PyErr_SetString(PyExc_ValueError, "mip_gap must be non-negative");
+    return NULL;
+  }
+#endif
   int retval;
   if (callback != NULL && callback != Py_None) {
     info = (struct mip_callback_object*)
@@ -1149,6 +1157,7 @@ static PyMethodDef LPX_methods[] = {
 #endif
 #if GLPK_VERSION(4, 23)
    "mir_cuts: Use mixed integer rounding cuts (default False)\n"
+   "mip_gap : The relative mip gap tolerance. (default 0.0)\n"
 #endif
    "tol_int : Tolerance used to check if the optimal solution to the\n"
    "  current LP relaxation is integer feasible.\n"
