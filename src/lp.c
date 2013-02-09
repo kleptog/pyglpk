@@ -565,11 +565,6 @@ static void mip_callback(glp_tree *tree, void *info) {
 
 static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
 				    PyObject *keywds) {
-  if (glp_get_status(LP) != GLP_OPT) {
-    PyErr_SetString(PyExc_RuntimeError, "integer solver requires "
-		    "existing optimal basic solution");
-    return NULL;
-  }
 #if GLPK_VERSION(4, 20)
   PyObject *callback=NULL;
   struct mip_callback_object*info=NULL;
@@ -653,6 +648,19 @@ static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
 #endif // GLPK_VERSION(4, 32)
 
   // Do checking on the various entries.
+#if GLPK_VERSION(4, 32)
+  if (!cp.presolve && glp_get_status(LP) != GLP_OPT) {
+    PyErr_SetString(PyExc_RuntimeError, "integer solver requires "
+                    "use of presolver or existing optimal basic solution");
+    return NULL;
+  }
+#else
+  if (glp_get_status(LP) != GLP_OPT) {
+    PyErr_SetString(PyExc_RuntimeError, "integer solver requires "
+		    "existing optimal basic solution");
+    return NULL;
+  }
+#endif
   switch (cp.msg_lev) {
   case GLP_MSG_OFF: case GLP_MSG_ERR: case GLP_MSG_ON: case GLP_MSG_ALL: break;
   default:
@@ -1236,9 +1244,9 @@ static PyMethodDef LPX_methods[] = {
    "if built against GLPK 4.20 or later.  Your PyGLPK was built against\n"
    "an earlier version.\n\n"
 #endif
-   "This method requires a mixed-integer problem where an optimal\n"
-   "solution to an LP relaxation (either through simplex() or\n"
-   "exact()) has already been found.  Alternately, try intopt().\n\n"
+   "If the presolver is not used this method requires a mixed-integer\n"
+   "problem where an optimal solution to an LP relaxation (either through\n"
+   "simplex() or exact()) has already been found.\n\n"
    "This returns None if the problem was successfully solved.\n"
    "Alternately, on failure it will return one of the following\n"
    "strings to indicate failure type.\n\n"
@@ -1252,6 +1260,9 @@ static PyMethodDef LPX_methods[] = {
 
   {"intopt", (PyCFunction)LPX_solver_intopt, METH_NOARGS,
    "intopt()\n\n"
+#if GLPK_VERSION(4, 32)
+   "Note: this method is deprecated, use integer(presolve=True) instead.\n\n"
+#endif
    "More advanced MIP branch-and-bound solver than integer(). This\n"
    "variant does not require an existing LP relaxation.\n\n"
    "This returns None if the problem was successfully solved.\n"
