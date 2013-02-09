@@ -589,6 +589,9 @@ static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
      "mir_cuts",
      "mip_gap",
 #endif // GLPK_VERSION(4, 23)
+#if GLPK_VERSION(4, 32)
+     "cov_cuts", "clq_cuts", "presolve", "binarize",
+#endif // GLPK_VERSION(4, 32)
      "tol_int", "tol_obj", "tm_lim", "out_frq", "out_dly", 
      "callback", //"cb_info", "cb_size",
      NULL};
@@ -603,6 +606,9 @@ static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
 #if GLPK_VERSION(4, 23)
        "ii"
 #endif // GLPK_VERSION(4, 23)
+#if GLPK_VERSION(4, 32)
+       "iiii"
+#endif // GLPK_VERSION(4, 32)
        "ddiiiO", kwlist, &cp.msg_lev, &cp.br_tech, &cp.bt_tech,
 #if GLPK_VERSION(4, 21)
        &cp.pp_tech,
@@ -614,6 +620,9 @@ static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
        &cp.mir_cuts,
        &cp.mip_gap,
 #endif // GLPK_VERSION(4, 23)
+#if GLPK_VERSION(4, 32)
+       &cp.cov_cuts, &cp.clq_cuts, &cp.presolve, &cp.binarize,
+#endif // GLPK_VERSION(4, 32)
        &cp.tol_int, &cp.tol_obj, &cp.tm_lim, &cp.out_frq, &cp.out_dly,
        &callback)) {
     return NULL;
@@ -624,6 +633,13 @@ static PyObject* LPX_solver_integer(LPXObject *self, PyObject *args,
 #if GLPK_VERSION(4, 23)
   cp.mir_cuts = cp.mir_cuts ? GLP_ON : GLP_OFF;
 #endif // GLPK_VERSION(4, 23)
+#if GLPK_VERSION(4, 32)
+  cp.cov_cuts = cp.cov_cuts ? GLP_ON : GLP_OFF;
+  cp.clq_cuts = cp.clq_cuts ? GLP_ON : GLP_OFF;
+  cp.presolve = cp.presolve ? GLP_ON : GLP_OFF;
+  cp.binarize = cp.binarize ? GLP_ON : GLP_OFF;
+#endif // GLPK_VERSION(4, 32)
+
   // Do checking on the various entries.
   switch (cp.msg_lev) {
   case GLP_MSG_OFF: case GLP_MSG_ERR: case GLP_MSG_ON: case GLP_MSG_ALL: break;
@@ -1158,6 +1174,12 @@ static PyMethodDef LPX_methods[] = {
 #if GLPK_VERSION(4, 23)
    "mir_cuts: Use mixed integer rounding cuts (default False)\n"
    "mip_gap : The relative mip gap tolerance. (default 0.0)\n"
+#endif
+#if GLPK_VERSION(4, 32)
+   "cov_cuts: Use cover cuts (default False)\n"
+   "clq_cuts: Use clique cuts (default False)\n"
+   "presolve: Use MIP presolver (default False)\n"
+   "binarize: Try to binarize integer variables (default False)\n"
 #endif
    "tol_int : Tolerance used to check if the optimal solution to the\n"
    "  current LP relaxation is integer feasible.\n"
